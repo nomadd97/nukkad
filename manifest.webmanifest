@@ -1,0 +1,47 @@
+{
+  "name": "Nukkad: shops on your street",
+  "short_name": "Nukkad",
+  "description": "Order from the shops on your street. Pickup or delivery, pay the shop directly.",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3EA",
+  "theme_color": "#1E4D3A",
+  "lang": "en-IN",
+  "categories": [
+    "shopping",
+    "food"
+  ],
+  "icons": [
+    {
+      "src": "icons/customer-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/customer-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/customer-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nukkad for Shops",
+      "url": "seller/",
+      "icons": [
+        {
+          "src": "icons/seller-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
