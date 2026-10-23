@@ -137,7 +137,7 @@ function cSearch() {
       <ul class="r-rows">${rows.map((r, i) => `<li>
         <button type="button" class="r-shop" data-act="c-shop" data-v="${esc(r.s.id)}"><span class="row-main"><span class="row-t">${esc(r.s.name)}</span>
           <span class="row-m">${ratingChip(r.s)} · ${isOpen(r.s) ? '⏱ ' + (Number(r.s.readyMins) || 30) + ' ' + t('min') : t('Closed now')}</span>
-          <span class="meta">${i === best ? `<span class="badge b-best">${t('Best price')}</span>` : ''}${r.orders < 3 ? `<span class="badge b-gem">${t('Local Gem')}</span>` : ''}${stockBadge(r.p.stock)}</span></span></button>
+          <span class="meta">${i === best ? `<span class="badge b-best">${t('Best price')}</span>` : ''}${r.orders < 3 ? `<span class="badge b-gem">${t('Local Gem')}</span>` : ''}${stockBadge(r.p.stock)}${fresh(r.p)}</span></span></button>
         <span class="r-right"><span class="price">${rs(r.p.price)}</span>${addCtl(r.p, r.s)}</span></li>`).join('')}</ul></div>`;
   }
   return h;
@@ -176,7 +176,7 @@ function cShop() {
   <p class="row-m">📍 ${esc(s.address || s.area)} · ${t('Pay by UPI or cash')}</p>
   ${cats.length > 1 ? `<div class="chips" role="group" aria-label="${esc(t('Filter'))}">${['All', ...cats].map(c => `<button class="chip" type="button" data-act="c-shopcat" data-v="${esc(c)}" aria-pressed="${C.shopCat === c}">${c === 'All' ? t('All items') : t(c)}</button>`).join('')}</div>` : ''}
   <ul class="prods">${ps.length ? ps.map(p => `<li class="prod ${p.stock <= 0 || !isOpen(s) ? 'off' : ''}">${thumb(p)}
-    <div class="row-main"><span class="row-t">${esc(p.name)}</span>${p.desc ? `<span class="row-m">${esc(p.desc)}</span>` : ''}<span class="meta"><span class="price">${rs(p.price)}</span>${stockBadge(p.stock)}</span></div>
+    <div class="row-main"><span class="row-t">${esc(p.name)}</span>${p.desc ? `<span class="row-m">${esc(p.desc)}</span>` : ''}<span class="meta"><span class="price">${rs(p.price)}</span>${stockBadge(p.stock)}${fresh(p)}</span></div>
     ${addCtl(p, s)}</li>`).join('') : `<li class="empty"><span class="big">📦</span><b>${t('No products listed yet')}</b></li>`}</ul>
   ${reviews.length ? `<section class="sec"><h2 class="h2">${t('What customers say')}</h2>${reviews.map(r => `<div class="card review">${stars(r.stars)}<p>${esc(r.text)}</p><span class="row-m">${ago(tAt(r))}</span></div>`).join('')}</section>` : ''}`;
 }

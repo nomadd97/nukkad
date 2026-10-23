@@ -26,11 +26,12 @@ function renderSeller() {
     case 'products': body = sProducts(s); break;
     case 'insights': body = sInsights(s); break;
     case 'shop': body = sSettings(s); break;
+    case 'chat': body = sChat(s); break;
     default: body = sOrders(s, mine);
   }
   return `${sHeader(s)}
   <main class="gut ${FX.enter ? 'enter' : ''}">${body}</main>
-  ${nav([['orders', t('Orders'), 'bag', nNew], ['products', t('Products'), 'box'], ['insights', t('Insights'), 'chart'], ['shop', t('Shop'), 'shop']], V.tab, 's-tab')}`;
+  ${nav([['orders', t('Orders'), 'bag', nNew], ['products', t('Products'), 'box'], ['chat', 'WhatsApp', 'chat'], ['insights', t('Insights'), 'chart'], ['shop', t('Shop'), 'shop']], V.tab, 's-tab')}`;
 }
 function sLogin() {
   const pick = V.pick ? shopById(V.pick) : null;

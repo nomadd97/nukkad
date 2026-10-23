@@ -28,6 +28,13 @@ Both are Progressive Web Apps: open the link on an Android phone, tap **Install*
 - Pay the shop directly: one-tap UPI (GPay / PhonePe / Paytm), a QR for paying from another phone, or cash
 - Live order tracking, rate after pickup, re-order in one tap
 
+**WhatsApp bot (built at CodeFest)**
+- Shops update their store by texting Nukkad's WhatsApp number, like texting a friend: "blue pen out of stock", "notebook stock 20", "pen +10", "calculator price 1099", "add lab coat ₹350, 8 left", "shop closed", "orders"
+- Understands Hinglish and Kannada too: "pen khatam", "ಪೆನ್ ಇಲ್ಲ", "dukaan band"
+- A fast built-in command reader handles the common messages; Gemini is asked only when the reader can't understand one, and its answer is checked against the shop's real products before anything changes
+- The same reader powers a WhatsApp-style chat inside the shop app, so it works even before the WhatsApp number is connected
+- Code: `supabase/functions/_shared/commands.js` (the brain) and `supabase/functions/whatsapp-bot/` (the WhatsApp webhook) · Preview video: `docs/nukkad-whatsapp-demo.mp4`
+
 **Shop app**
 - 4-digit PIN login, register a new shop in two minutes
 - Orders arrive live with a chime and a phone notification; accept → ready → done
@@ -77,7 +84,20 @@ The demo opens on **Vidyanagar, Hubballi** (near KLE Tech). Pick another area fr
    ```
    The key lives on the server, never inside the app. Without it, Smart fill still works using the built-in reader.
 
-### 3. Hosting: Vercel (free)
+### 3. WhatsApp bot (optional, free test number)
+1. https://developers.facebook.com → My Apps → Create app → add **WhatsApp**. Meta gives you a free test number.
+2. Add your own phone as a recipient, and note the **Phone number ID** and a **permanent access token** (System user in Business Settings).
+3. Deploy the bot and set its secrets:
+   ```bash
+   supabase secrets set WHATSAPP_TOKEN=<token> WHATSAPP_PHONE_ID=<phone number id> WHATSAPP_VERIFY_TOKEN=<any words you pick>
+   supabase secrets set WHATSAPP_APP_SECRET=<app secret>   # optional: rejects fake messages
+   supabase functions deploy whatsapp-bot --no-verify-jwt
+   ```
+4. In Meta: WhatsApp → Configuration → Webhook URL `https://<project>.supabase.co/functions/v1/whatsapp-bot`, the same verify token, and subscribe to **messages**.
+5. Put the bot's number in `config.js` as `botNumber`, so the shop app shows a "Message Nukkad on WhatsApp" button.
+The shop is found by the WhatsApp number it registered with, so only the owner's phone can change that shop.
+
+### 4. Hosting: Vercel (free)
 - Push this folder to GitHub → https://vercel.com/new → import the repo → Framework preset **Other** → Deploy.
 - Or drag the folder onto https://app.netlify.com/drop.
 You get an `https://` link. Open it on your phone and tap **Install**. Share `/seller/` with shopkeepers.
@@ -114,7 +134,7 @@ Change something in `src/` or `tools/i18n.tsv`, then run `python3 tools/build.py
 
 ## Project history
 - **Round 1 (before CodeFest):** idea, deck and a working prototype of both apps.
-- **During CodeFest:** every change is a separate commit from here on, so the history shows what we built at the event.
+- **During CodeFest:** every change is a separate commit from here on, so the history shows what we built at the event. First up: the WhatsApp bot.
 
 ## Honest notes (say these if a judge asks)
 - **Security is demo grade.** Anyone with the app can read and write orders. For production, shops sign in with Supabase Auth (phone OTP) and the database rules limit each shop to its own orders and products. PINs are already hashed and hidden.

@@ -23,5 +23,7 @@ const SYN = {
 };
 const synify = q => String(q || '').split(/\s+/).map(w => SYN[w] || w).join(' ');
 /* Brand mark: the road N (customer = forest tile, shop = marigold tile) */
+ICON.chat = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.6A8.4 8.4 0 1 1 21 11.5z"/></svg>';
+ICON.send = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
 ICON.logo = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#1E4D3A"/><path d="M30 76V30L70 70V34" fill="none" stroke="#F7F1E5" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#1E4D3A" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#EE9A2E"/></svg>';
 ICON.logoShop = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#EE9A2E"/><path d="M30 76V30L70 70V34" fill="none" stroke="#1E4D3A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#EE9A2E" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#F7F1E5" stroke="#1E4D3A" stroke-width="2.5"/></svg>';

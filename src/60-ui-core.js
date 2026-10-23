@@ -154,6 +154,7 @@ function render() {
     if (n && n !== document.body) { n.focus({preventScroll:true}); try { if (ss !== null) n.setSelectionRange(ss, se); } catch (e) { /* ignore */ } }
   }
   wireHero();
+  chatScroll();
   if (FX.count) countUps();
   FX.enter = false; FX.count = false; FX.sheet = false;
 }
