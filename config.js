@@ -1,8 +1,10 @@
-/* Nukkad settings. Fill these after you create the free Supabase project (see README).
-   Leave them empty and the apps still run as a demo copy on each phone. */
+/* Nukkad settings. The anon key below is Supabase's PUBLIC key: it is meant to be in the app.
+   What it can do is limited by the database rules (Row Level Security) in supabase/schema.sql.
+   Never put the service_role / secret key here. */
 window.NK_CONFIG = {
-  supabaseUrl: '',          // e.g. 'https://abcdxyz.supabase.co'
-  supabaseKey: '',          // the "anon public" key. Safe to ship: the database rules decide what it can do.
-  publicUrl: '',            // e.g. 'https://nukkad.vercel.app/'  (used in shop links and QR posters)
-  smartFillFunction: 'smart-fill'  // Supabase Edge Function that calls the AI. Leave as is.
+  supabaseUrl: 'https://wezrqzxmzqbzyuzcrraf.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlenJxenhtenFienl1emNycmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzIxMzMsImV4cCI6MjEwODM0ODEzM30.VQgJiHkxnReumNS-qP_BQBpxr3DGSW4WqMYI1VUz2gI',
+  publicUrl: '',            // set after Vercel deploy, e.g. 'https://nukkad.vercel.app/'
+  smartFillFunction: 'smart-fill',
+  botNumber: ''             // Nukkad's WhatsApp bot number (digits only), set after Meta setup
 };

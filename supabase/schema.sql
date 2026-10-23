@@ -27,6 +27,7 @@ begin
     execute format('create policy "read" on public.%I for select using (true)', 'nk_' || t);
     execute format('create policy "insert" on public.%I for insert with check (true)', 'nk_' || t);
     execute format('create policy "update" on public.%I for update using (true) with check (true)', 'nk_' || t);
+    execute format('grant select, insert, update on public.%I to anon, authenticated', 'nk_' || t);
   end loop;
 end $$;
 
@@ -40,6 +41,7 @@ create table if not exists public.nk_pins (
   pin_hash text not null
 );
 alter table public.nk_pins enable row level security;  -- no policies = no direct access at all
+revoke all on public.nk_pins from anon, authenticated;
 
 -- ---------- Functions the apps call ----------
 
@@ -103,10 +105,10 @@ revoke all on function public.nk_patch(text, text, jsonb) from public;
 revoke all on function public.nk_place_order(text, jsonb) from public;
 revoke all on function public.nk_login(text, text) from public;
 revoke all on function public.nk_set_pin(text, text) from public;
-grant execute on function public.nk_patch(text, text, jsonb) to anon, authenticated;
-grant execute on function public.nk_place_order(text, jsonb) to anon, authenticated;
-grant execute on function public.nk_login(text, text) to anon, authenticated;
-grant execute on function public.nk_set_pin(text, text) to anon, authenticated;
+grant execute on function public.nk_patch(text, text, jsonb) to anon, authenticated, service_role;
+grant execute on function public.nk_place_order(text, jsonb) to anon, authenticated, service_role;
+grant execute on function public.nk_login(text, text) to anon, authenticated, service_role;
+grant execute on function public.nk_set_pin(text, text) to anon, authenticated, service_role;
 
 -- ---------- Live updates: new orders ring on the shop phone instantly ----------
 do $$
