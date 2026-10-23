@@ -4,7 +4,7 @@
    ========================================================= */
 function sHeader(s) {
   return `<header class="top"><div class="gut"><div class="top-in">
-    <button class="brand" type="button" data-act="s-tab" data-v="orders"><b>Nukkad</b><span>${t('for shops')}</span></button>
+    <button class="brand" type="button" data-act="s-tab" data-v="orders">${ICON.logoShop}<b>nukkad</b><span>${t('for shops')}</span></button>
     <div class="top-r">${connChip()}${langBtn()}</div></div>
     ${s ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:10px">
       <div class="row-main"><span class="row-t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</span><span class="row-m">${esc(s.area)} · ${ratingChip(s)}</span></div>

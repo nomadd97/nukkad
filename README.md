@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo.png" alt="nukkad. your street, online" width="600"></p>
+
 # Nukkad — shops on your street, on your phone
 
 ![Nukkad demo](docs/demo-poster.jpg)

@@ -122,6 +122,9 @@ const SYN = {
   'ಚಾರ್ಜರ್':'charger','ಕೇಬಲ್':'cable','ಬಲ್ಬ್':'bulb','ಬ್ಯಾಟರಿ':'batter','ದೀಪ':'diya','ಹಣತೆ':'diya','ಆಟಿಕೆ':'toy','ಚೀಲ':'bag','ನಿಘಂಟು':'dictionary','ಶಾಯಿ':'ink','ಪ್ರಿಂಟರ್':'printer',
 };
 const synify = q => String(q || '').split(/\s+/).map(w => SYN[w] || w).join(' ');
+/* Brand mark: the road N (customer = forest tile, shop = marigold tile) */
+ICON.logo = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#1E4D3A"/><path d="M30 76V30L70 70V34" fill="none" stroke="#F7F1E5" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#1E4D3A" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#EE9A2E"/></svg>';
+ICON.logoShop = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#EE9A2E"/><path d="M30 76V30L70 70V34" fill="none" stroke="#1E4D3A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#EE9A2E" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#F7F1E5" stroke="#1E4D3A" stroke-width="2.5"/></svg>';
 
 /* ---------- Demo data (used for the on-device demo copy) ---------- */
 function seed() {
@@ -901,7 +904,7 @@ function renderCustomer() {
   return `
   <header class="top"><div class="gut">
     <div class="top-in">
-      <button class="brand" type="button" data-act="c-home" aria-label="Nukkad"><b>Nukkad</b></button>
+      <button class="brand" type="button" data-act="c-home" aria-label="Nukkad home">${ICON.logo}<b>nukkad</b></button>
       <div class="top-r">${connChip()}${langBtn()}
         <label class="loc">${ICON.pin}<span class="sr">${t('Your area')}</span><select id="c-area" data-act="c-area">${['All', ...areas()].map(a => `<option value="${esc(a)}" ${a === C.area ? 'selected' : ''}>${a === 'All' ? t('All areas') : esc(a)}</option>`).join('')}</select></label>
       </div>
@@ -1325,7 +1328,7 @@ document.addEventListener('focusout', e => { if (e.target.id === 'c-q') setTimeo
    ========================================================= */
 function sHeader(s) {
   return `<header class="top"><div class="gut"><div class="top-in">
-    <button class="brand" type="button" data-act="s-tab" data-v="orders"><b>Nukkad</b><span>${t('for shops')}</span></button>
+    <button class="brand" type="button" data-act="s-tab" data-v="orders">${ICON.logoShop}<b>nukkad</b><span>${t('for shops')}</span></button>
     <div class="top-r">${connChip()}${langBtn()}</div></div>
     ${s ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:10px">
       <div class="row-main"><span class="row-t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</span><span class="row-m">${esc(s.area)} · ${ratingChip(s)}</span></div>

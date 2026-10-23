@@ -22,3 +22,6 @@ const SYN = {
   'ಚಾರ್ಜರ್':'charger','ಕೇಬಲ್':'cable','ಬಲ್ಬ್':'bulb','ಬ್ಯಾಟರಿ':'batter','ದೀಪ':'diya','ಹಣತೆ':'diya','ಆಟಿಕೆ':'toy','ಚೀಲ':'bag','ನಿಘಂಟು':'dictionary','ಶಾಯಿ':'ink','ಪ್ರಿಂಟರ್':'printer',
 };
 const synify = q => String(q || '').split(/\s+/).map(w => SYN[w] || w).join(' ');
+/* Brand mark: the road N (customer = forest tile, shop = marigold tile) */
+ICON.logo = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#1E4D3A"/><path d="M30 76V30L70 70V34" fill="none" stroke="#F7F1E5" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#1E4D3A" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#EE9A2E"/></svg>';
+ICON.logoShop = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#EE9A2E"/><path d="M30 76V30L70 70V34" fill="none" stroke="#1E4D3A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 36L67 70" fill="none" stroke="#EE9A2E" stroke-width="2" stroke-dasharray="5 5"/><circle cx="70" cy="22" r="8" fill="#F7F1E5" stroke="#1E4D3A" stroke-width="2.5"/></svg>';

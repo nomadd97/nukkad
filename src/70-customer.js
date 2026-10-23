@@ -48,7 +48,7 @@ function renderCustomer() {
   return `
   <header class="top"><div class="gut">
     <div class="top-in">
-      <button class="brand" type="button" data-act="c-home" aria-label="Nukkad"><b>Nukkad</b></button>
+      <button class="brand" type="button" data-act="c-home" aria-label="Nukkad home">${ICON.logo}<b>nukkad</b></button>
       <div class="top-r">${connChip()}${langBtn()}
         <label class="loc">${ICON.pin}<span class="sr">${t('Your area')}</span><select id="c-area" data-act="c-area">${['All', ...areas()].map(a => `<option value="${esc(a)}" ${a === C.area ? 'selected' : ''}>${a === 'All' ? t('All areas') : esc(a)}</option>`).join('')}</select></label>
       </div>
