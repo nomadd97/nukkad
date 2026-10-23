@@ -110,6 +110,10 @@ supabase/             schema.sql, seed.sql, functions/smart-fill
 
 Change something in `src/` or `tools/i18n.tsv`, then run `python3 tools/build.py`.
 
+## Project history
+- **Round 1 (before CodeFest):** idea, deck and a working prototype of both apps.
+- **During CodeFest:** every change is a separate commit from here on, so the history shows what we built at the event.
+
 ## Honest notes (say these if a judge asks)
 - **Security is demo grade.** Anyone with the app can read and write orders. For production, shops sign in with Supabase Auth (phone OTP) and the database rules limit each shop to its own orders and products. PINs are already hashed and hidden.
 - Demo UPI IDs end in `@nukkad`, so they can't receive real money. A shop puts its real UPI ID in Shop → Orders, delivery and payment.
