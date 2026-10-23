@@ -4,7 +4,7 @@
 window.NK_CONFIG = {
   supabaseUrl: 'https://wezrqzxmzqbzyuzcrraf.supabase.co',
   supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlenJxenhtenFienl1emNycmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzIxMzMsImV4cCI6MjEwODM0ODEzM30.VQgJiHkxnReumNS-qP_BQBpxr3DGSW4WqMYI1VUz2gI',
-  publicUrl: '',            // set after Vercel deploy, e.g. 'https://nukkad.vercel.app/'
+  publicUrl: 'https://nukkad-lac.vercel.app/',
   smartFillFunction: 'smart-fill',
   botNumber: ''             // Nukkad's WhatsApp bot number (digits only), set after Meta setup
 };
