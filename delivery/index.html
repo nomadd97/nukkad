@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Nukkad Delivery Partner (demo)</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3D36">
+<link rel="icon" href="../icons/seller-192.png">
+<style>
+:root{--ink:#1d2321;--mut:#5f6b66;--bg:#f5f1e8;--card:#fff;--line:#e4ddcc;--forest:#1F3D36;--amber:#EE9A2E;--ok:#2f7d4f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--forest);color:#fff;padding:14px 16px 16px}
+.row{display:flex;align-items:center;gap:10px}
+.sp{flex:1}
+.logo{font-weight:800;font-size:19px;letter-spacing:.2px}
+.tag{font-size:11px;background:var(--amber);color:#2a1a00;border-radius:99px;padding:3px 9px;font-weight:700}
+.sub{font-size:13px;opacity:.85;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}
+.stat b{display:block;font-size:19px}
+.stat span{font-size:11.5px;opacity:.8}
+main{padding:14px 16px 40px;max-width:640px;margin:0 auto}
+h2{font-size:13px;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);margin:20px 0 8px}
+.job{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 14px;margin-bottom:10px}
+.job .top{display:flex;gap:8px;align-items:center}
+.id{font-weight:800}
+.pill{font-size:11.5px;font-weight:700;border-radius:99px;padding:3px 9px;background:#fff1d9;color:#7a4a00}
+.pill.go{background:#dff2e6;color:#1d5c36}
+.pill.done{background:#e8e8e8;color:#555}
+.line{display:flex;gap:8px;margin-top:8px;color:var(--ink)}
+.line i{font-style:normal;width:22px;text-align:center}
+.line small{display:block;color:var(--mut)}
+.pay{margin-left:auto;font-weight:800;color:var(--forest)}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:11px 14px;cursor:pointer;background:var(--forest);color:#fff;width:100%;margin-top:10px}
+button.alt{background:#fff;color:var(--forest);border:1px solid var(--forest)}
+button:disabled{opacity:.5}
+.empty{color:var(--mut);text-align:center;padding:22px 10px;border:1px dashed var(--line);border-radius:14px;background:#fffdf8}
+.note{font-size:12.5px;color:var(--mut);margin-top:22px;padding:10px 12px;border-radius:12px;background:#fffdf8;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="row"><span class="logo">🛵 FleetGo</span><span class="sp"></span><span class="tag">DEMO · 3rd-party partner app</span></div>
+  <div class="sub">Rider: Ravi K. · Hubballi zone · connected to Nukkad</div>
+  <div class="stats">
+    <div class="stat"><b id="sJobs">0</b><span>Jobs now</span></div>
+    <div class="stat"><b id="sDone">0</b><span>Delivered</span></div>
+    <div class="stat"><b id="sEarn">₹0</b><span>Earned</span></div>
+  </div>
+</header>
+<main>
+  <h2>Shop is packing</h2><div id="packing"></div>
+  <h2>Out for delivery</h2><div id="going"></div>
+  <h2>Delivered</h2><div id="done"></div>
+  <p class="note">This screen is a mock of a delivery partner's app. It reads the same Nukkad orders the shop and the buyer see, and "Delivered" updates the buyer's tracker. Nukkad never needs its own fleet in Phase 1: any partner plugs in the same way.</p>
+</main>
+<script src="../config.js"></script>
+<script>
+(function () {
+  var C = window.NK_CONFIG, H = {apikey: C.supabaseKey, Authorization: 'Bearer ' + C.supabaseKey, 'Content-Type': 'application/json'};
+  var shops = {}, orders = [], busy = {};
+  var rs = function (n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); };
+  function get(table, q) { return fetch(C.supabaseUrl + '/rest/v1/' + table + '?select=id,data&' + q, {headers: H}).then(function (r) { return r.ok ? r.json() : []; }); }
+  function load() {
+    return Promise.all([get('nk_shops', 'limit=200'), get('nk_orders', 'order=updated_at.desc&limit=80')]).then(function (res) {
+      shops = {}; res[0].forEach(function (r) { shops[r.id] = r.data; });
+      orders = res[1].map(function (r) { return Object.assign({id: r.id}, r.data); }).filter(function (o) { return o.mode === 'delivery'; });
+      draw();
+    }).catch(function () {});
+  }
+  function card(o, kind) {
+    var s = shops[o.shopId] || {name: 'Shop', address: ''};
+    var items = (o.items || []).map(function (i) { return i.qty + '× ' + i.name; }).join(', ');
+    var pill = kind === 'going' ? '<span class="pill go">On the way</span>' : kind === 'done' ? '<span class="pill done">Delivered</span>' : '<span class="pill">Packing</span>';
+    var btn = kind === 'going' ? '<button data-id="' + esc(o.id) + '">✓ Mark delivered</button>' : '';
+    return '<div class="job"><div class="top"><span class="id">' + esc(o.id) + '</span>' + pill + '<span class="pay">' + rs(Math.max(20, Number(o.fee) || 25)) + '</span></div>' +
+      '<div class="line"><i>🏪</i><div><b>Pick up: ' + esc(s.name) + '</b><small>' + esc(items) + '</small></div></div>' +
+      '<div class="line"><i>📍</i><div><b>Drop: ' + esc(o.buyer) + '</b><small>' + esc(o.address) + '</small></div></div>' + btn + '</div>';
+  }
+  function draw() {
+    var p = orders.filter(function (o) { return o.status === 'confirmed'; });
+    var g = orders.filter(function (o) { return o.status === 'ready'; });
+    var d = orders.filter(function (o) { return o.status === 'completed'; });
+    function fill(id, list, kind, msg) { document.getElementById(id).innerHTML = list.length ? list.map(function (o) { return card(o, kind); }).join('') : '<div class="empty">' + msg + '</div>'; }
+    fill('packing', p, 'packing', 'No jobs yet. A job appears when a shop accepts a delivery order.');
+    fill('going', g, 'going', 'Nothing out right now. The shop taps "Send out for delivery" to hand over.');
+    fill('done', d.slice(0, 6), 'done', 'No deliveries yet today.');
+    document.getElementById('sJobs').textContent = p.length + g.length;
+    document.getElementById('sDone').textContent = d.length;
+    document.getElementById('sEarn').textContent = rs(d.reduce(function (a, o) { return a + Math.max(20, Number(o.fee) || 25); }, 0));
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-id]'); if (!b || busy[b.dataset.id]) return;
+    busy[b.dataset.id] = 1; b.disabled = true; b.textContent = 'Updating…';
+    fetch(C.supabaseUrl + '/rest/v1/rpc/nk_patch', {method: 'POST', headers: H, body: JSON.stringify({t: 'orders', doc_id: b.dataset.id, patch: {status: 'completed', statusAt: Date.now(), via: 'partner'}})})
+      .then(function () { delete busy[b.dataset.id]; load(); });
+  });
+  load(); setInterval(load, 3000);
+})();
+</script>
+</body>
+</html>
