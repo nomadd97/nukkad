@@ -719,13 +719,13 @@ function parseMessage(text, products) {
   return String(text || '').split(/\n|;|\s+and\s+|\s+aur\s+/i).map(l => l.trim()).filter(Boolean).slice(0, 15).map(l => parseLine(l, products)).filter(Boolean);
 }
 
-/* Order commands (need the database, so the server runs them): "accept", "ready NK-AB12", "delivered", "paid NK-AB12", "pending", "remove lab coat" */
+/* Order commands (need the database, so the server runs them): "accept", "decline NK-AB12", "ready NK-AB12", "delivered", "paid NK-AB12", "pending", "remove lab coat" */
 function parseOrderCmd(text) {
   const t = String(text || '').trim().replace(/^\//, '');
-  let m = t.match(/^(accept|confirm|ready|dispatch|delivered|done|complete|picked up|paid)\s*(?:order\s*)?(NK-?[A-Z0-9]{4})?\s*$/i);
+  let m = t.match(/^(accept|confirm|ready|dispatch|delivered|done|complete|picked up|paid|cancel|decline|reject)\s*(?:order\s*)?(NK-?[A-Z0-9]{4})?\s*$/i);
   if (m) {
     const w = m[1].toLowerCase();
-    const type = w === 'accept' || w === 'confirm' ? 'accept' : w === 'ready' || w === 'dispatch' ? 'ready' : w === 'paid' ? 'paid' : 'done';
+    const type = w === 'accept' || w === 'confirm' ? 'accept' : w === 'ready' || w === 'dispatch' ? 'ready' : w === 'paid' ? 'paid' : ['cancel', 'decline', 'reject'].includes(w) ? 'cancel' : 'done';
     return {type, id: m[2] ? m[2].toUpperCase().replace(/^NK-?/, 'NK-') : ''};
   }
   if (/^(pending|new orders?|active( orders?)?|jobs|list)\s*$/i.test(t)) return {type:'list'};
@@ -735,7 +735,7 @@ function parseOrderCmd(text) {
 }
 
 const rs = n => '₹' + Number(n || 0).toLocaleString('en-IN');
-const HELP_TEXT = 'Namaste! Send me updates like:\n• blue pen out of stock\n• notebook stock 20\n• pen +10\n• geometry box price 130\n• add lab coat ₹350, 8 left\n• shop closed / shop open\n• orders (sales today) / pending (open orders)\n• accept / ready / delivered / paid (add an order id like NK-AB12 if more than one)\n• remove lab coat\nHindi and Kannada words work too.';
+const HELP_TEXT = 'Namaste! Send me updates like:\n• blue pen out of stock\n• notebook stock 20\n• pen +10\n• geometry box price 130\n• add lab coat ₹350, 8 left\n• shop closed / shop open\n• orders (sales today) / pending (open orders)\n• accept / decline / ready / delivered / paid (add an order id like NK-AB12 if more than one)\n• remove lab coat\nHindi and Kannada words work too.';
 
 /* The reply line for one action, after it was applied. ctx = {shop, stats:{orders, sales, pending}} */
 function replyFor(a, ctx = {}) {

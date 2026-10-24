@@ -113,8 +113,8 @@ async function handle(from: string, text: string): Promise<string> {
   }
   return handleShop({ ...shops[0].data, id: shops[0].id }, text);
 }
-const FROM: Record<string, string[]> = { accept: ['pending'], ready: ['confirmed'], done: ['ready'] };
-const TO: Record<string, string> = { accept: 'confirmed', ready: 'ready', done: 'completed' };
+const FROM: Record<string, string[]> = { cancel: ['pending', 'confirmed', 'ready'], accept: ['pending'], ready: ['confirmed'], done: ['ready'] };
+const TO: Record<string, string> = { cancel: 'cancelled', accept: 'confirmed', ready: 'ready', done: 'completed' };
 async function orderCmd(shop: Record<string, any>, c: Action, products: Product[]): Promise<string> {
   const { data } = await db.from('nk_orders').select('id,data').eq('data->>shopId', shop.id).order('updated_at', { ascending: false }).limit(300);
   const orders = (data ?? []).map((r: any) => ({ ...r.data, id: r.id }));
@@ -138,11 +138,15 @@ async function orderCmd(shop: Record<string, any>, c: Action, products: Product[
     return `₹ ${pick[0].id} marked paid.`;
   }
   const cands = orders.filter((o: any) => FROM[c.type].includes(o.status) && (!c.id || o.id === c.id));
-  if (!cands.length) return c.id ? `🤔 ${c.id} isn't waiting for that step.` : { accept: 'No new orders waiting.', ready: 'No accepted orders to mark ready.', done: 'No orders out for delivery or pickup.' }[c.type as 'accept' | 'ready' | 'done'];
+  if (!cands.length) return c.id ? `🤔 ${c.id} isn't waiting for that step.` : { cancel: 'No open orders to decline.', accept: 'No new orders waiting.', ready: 'No accepted orders to mark ready.', done: 'No orders out for delivery or pickup.' }[c.type as 'cancel' | 'accept' | 'ready' | 'done'];
   if (!c.id && cands.length > 1) return 'Which order?\n' + cands.slice(0, 6).map(line).join('\n') + `\n\nSend e.g. "${c.type === 'done' ? 'delivered' : c.type} ${cands[0].id}".`;
   const o = cands[0];
   await patch('orders', o.id, { status: TO[c.type], statusAt: Date.now() });
-  const msg = { accept: '✅ Accepted', ready: o.mode === 'delivery' ? '🛵 Out for delivery' : '📦 Ready for pickup', done: o.mode === 'delivery' ? '✓ Delivered' : '✓ Picked up' }[c.type as 'accept' | 'ready' | 'done'];
+  if (c.type === 'cancel') {
+    for (const it of o.items ?? []) { const p = products.find((x) => x.id === it.pid); if (p) await patch('products', p.id, { stock: Number(p.stock ?? 0) + (it.qty | 0) }); }
+    return `❌ Declined ${o.id} (${o.buyer}). Stock is back on the shelf. ${o.buyer.split(' ')[0]} sees it now.`;
+  }
+  const msg = { cancel: '', accept: '✅ Accepted', ready: o.mode === 'delivery' ? '🛵 Out for delivery' : '📦 Ready for pickup', done: o.mode === 'delivery' ? '✓ Delivered' : '✓ Picked up' }[c.type as 'cancel' | 'accept' | 'ready' | 'done'];
   return `${msg}: ${o.id} (${o.buyer}). ${o.buyer.split(' ')[0]} sees it now.`;
 }
 async function handleShop(shop: Record<string, any>, text: string): Promise<string> {
