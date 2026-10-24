@@ -50,6 +50,8 @@ button:disabled{opacity:.5}
   </div>
 </header>
 <main>
+  <div id="msg" class="note" style="margin:0 0 6px"></div>
+  <h2>New orders (waiting for the shop)</h2><div id="newo"></div>
   <h2>Shop is packing</h2><div id="packing"></div>
   <h2>Out for delivery</h2><div id="going"></div>
   <h2>Delivered</h2><div id="done"></div>
@@ -62,32 +64,38 @@ button:disabled{opacity:.5}
   var shops = {}, orders = [], busy = {};
   var rs = function (n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); };
-  function get(table, q) { return fetch(C.supabaseUrl + '/rest/v1/' + table + '?select=id,data&' + q, {headers: H}).then(function (r) { return r.ok ? r.json() : []; }); }
+  var pickups = 0;
+  function get(table, q) { return fetch(C.supabaseUrl + '/rest/v1/' + table + '?select=id,data&' + q, {headers: H}).then(function (r) { if (!r.ok) throw new Error('Database said ' + r.status); return r.json(); }); }
   function load() {
     return Promise.all([get('nk_shops', 'limit=200'), get('nk_orders', 'order=updated_at.desc&limit=80')]).then(function (res) {
       shops = {}; res[0].forEach(function (r) { shops[r.id] = r.data; });
-      orders = res[1].map(function (r) { return Object.assign({id: r.id}, r.data); }).filter(function (o) { return o.mode === 'delivery'; });
-      draw();
-    }).catch(function () {});
+      var all = res[1].map(function (r) { return Object.assign({id: r.id}, r.data); });
+      orders = all.filter(function (o) { return o.mode === 'delivery'; });
+      pickups = all.length - orders.length;
+      draw(); setMsg('Live · updated ' + new Date().toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit', second: '2-digit'}) + ' · ' + orders.length + ' delivery order' + (orders.length === 1 ? '' : 's') + (pickups ? ' (' + pickups + ' pickup order' + (pickups === 1 ? '' : 's') + ' not shown: only delivery orders need a rider)' : ''));
+    }).catch(function (e) { draw(); setMsg('⚠️ Could not reach Nukkad: ' + (e && e.message ? e.message : 'network problem') + '. Check the internet and this page will retry by itself.'); });
   }
   function card(o, kind) {
     var s = shops[o.shopId] || {name: 'Shop', address: ''};
     var items = (o.items || []).map(function (i) { return i.qty + '× ' + i.name; }).join(', ');
-    var pill = kind === 'going' ? '<span class="pill go">On the way</span>' : kind === 'done' ? '<span class="pill done">Delivered</span>' : '<span class="pill">Packing</span>';
+    var pill = kind === 'new' ? '<span class="pill">New</span>' : kind === 'going' ? '<span class="pill go">On the way</span>' : kind === 'done' ? '<span class="pill done">Delivered</span>' : '<span class="pill">Packing</span>';
     var btn = kind === 'going' ? '<button data-id="' + esc(o.id) + '">✓ Mark delivered</button>' : '';
     return '<div class="job"><div class="top"><span class="id">' + esc(o.id) + '</span>' + pill + '<span class="pay">' + rs(Math.max(20, Number(o.fee) || 25)) + '</span></div>' +
       '<div class="line"><i>🏪</i><div><b>Pick up: ' + esc(s.name) + '</b><small>' + esc(items) + '</small></div></div>' +
       '<div class="line"><i>📍</i><div><b>Drop: ' + esc(o.buyer) + '</b><small>' + esc(o.address) + '</small></div></div>' + btn + '</div>';
   }
+  function setMsg(t) { document.getElementById('msg').textContent = t; }
   function draw() {
+    var n = orders.filter(function (o) { return o.status === 'pending'; });
     var p = orders.filter(function (o) { return o.status === 'confirmed'; });
     var g = orders.filter(function (o) { return o.status === 'ready'; });
     var d = orders.filter(function (o) { return o.status === 'completed'; });
     function fill(id, list, kind, msg) { document.getElementById(id).innerHTML = list.length ? list.map(function (o) { return card(o, kind); }).join('') : '<div class="empty">' + msg + '</div>'; }
+    fill('newo', n, 'new', 'No new delivery orders. Place one from the buyer app and choose delivery.');
     fill('packing', p, 'packing', 'No jobs yet. A job appears when a shop accepts a delivery order.');
     fill('going', g, 'going', 'Nothing out right now. The shop taps "Send out for delivery" to hand over.');
     fill('done', d.slice(0, 6), 'done', 'No deliveries yet today.');
-    document.getElementById('sJobs').textContent = p.length + g.length;
+    document.getElementById('sJobs').textContent = n.length + p.length + g.length;
     document.getElementById('sDone').textContent = d.length;
     document.getElementById('sEarn').textContent = rs(d.reduce(function (a, o) { return a + Math.max(20, Number(o.fee) || 25); }, 0));
   }
