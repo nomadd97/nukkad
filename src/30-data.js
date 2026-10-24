@@ -5,7 +5,10 @@
    - claude:   the preview inside Claude (shared store of the artifact)
    - local:    a demo copy kept on this device (always works, no setup) */
 const COLLS = ['shops','products','orders','searches','ratings','offers'];
-const S = {conn:'connecting', backend:'local', shops:[], products:[], orders:[], searches:[], ratings:[], offers:[]};
+// Optional collections: the app still starts if their table isn't there yet (the feature just hides)
+const OPT = ['asks'];
+const ALL = [...COLLS, ...OPT];
+const S = {conn:'connecting', backend:'local', shops:[], products:[], orders:[], searches:[], ratings:[], offers:[], asks:[], asksLive:false};
 let L = loadLocal();
 let DB = null, SB = null;
 function loadLocal() {
@@ -13,7 +16,7 @@ function loadLocal() {
   return seed2();
 }
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(L)); } catch (e) { /* ignore */ } }
-function useLocal() { COLLS.forEach(c => { S[c] = L[c] || (L[c] = []); }); }
+function useLocal() { ALL.forEach(c => { S[c] = L[c] || (L[c] = []); }); }
 useLocal();
 
 let renderQueued = false;
@@ -29,7 +32,7 @@ function applyLocally(coll, id, body, merge) {
 }
 function goLocal(reason) {
   if (S.backend !== 'local') {
-    L = {v:3}; COLLS.forEach(c => { L[c] = S[c].map(x => JSON.parse(JSON.stringify(x))); }); saveLocal();
+    L = {v:3}; ALL.forEach(c => { L[c] = (S[c] || []).map(x => JSON.parse(JSON.stringify(x))); }); saveLocal();
   }
   S.backend = 'local'; S.conn = 'local'; DB = null; SB = null; useLocal();
   if (reason) toast(reason);
@@ -107,10 +110,13 @@ async function connectSupabase() {
   const bad = res.find(r => r.error);
   if (bad) throw new Error(bad.error.message);
   COLLS.forEach((c, i) => { S[c] = res[i].data.map(r => ({...r.data, id:r.id})); });
+  // Nukkad se Poocho: only switch it on if its table exists
+  const ra = await sb.from('nk_asks').select('id,data').limit(2000);
+  S.asksLive = !ra.error; S.asks = ra.error ? [] : ra.data.map(r => ({...r.data, id:r.id}));
   SB = sb; S.backend = 'supabase'; S.conn = 'live';
   sb.channel('nk-live').on('postgres_changes', {event:'*', schema:'public'}, p => {
     const c = String(p.table || '').replace(/^nk_/, '');
-    if (!COLLS.includes(c)) return;
+    if (!ALL.includes(c)) return;
     if (p.eventType === 'DELETE') S[c] = S[c].filter(x => x.id !== (p.old && p.old.id));
     else if (p.new) { const row = {...p.new.data, id:p.new.id}; const i = S[c].findIndex(x => x.id === row.id); if (i >= 0) S[c][i] = row; else S[c].push(row); }
     scheduleRender();
@@ -137,6 +143,7 @@ async function connectClaude() {
       scheduleRender();
     }, () => { if (S.backend === 'claude') goLocal(t('Live sync dropped. You’re on a demo copy on this device now.')); });
   });
+  OPT.forEach(c => db.collection(c).onSnapshot(snap => { if (S.backend === 'claude') { S[c] = snap.docs.map(d => ({...d.data(), id:d.id})); scheduleRender(); } }, () => {}));
   setTimeout(() => { if (S.conn === 'connecting') { S.conn = 'local'; render(); } }, 9000);
 }
 async function connect() {

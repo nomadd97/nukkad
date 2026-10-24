@@ -40,6 +40,7 @@ function renderCustomer() {
     case 'track': body = cTrack(); break;
     case 'orders': body = cOrders(); break;
     case 'saved': body = cSaved(); break;
+    case 'ask': body = cAsk(); break;
     default: body = cHome();
   }
   const lines = cartLines(), count = lines.reduce((a, l) => a + l.q, 0), sub = lines.reduce((a, l) => a + l.p.price * l.q, 0);
@@ -87,6 +88,7 @@ function cHome() {
     </div>
     <div class="dots" aria-hidden="true">${[0, 1, 2].map(i => `<i class="${i === C.slide ? 'on' : ''}"></i>`).join('')}</div>
   </div>
+  ${askCta('')}
   <div class="cats">${['Stationery','Grocery','Clothing','Electronics','Handicrafts'].map(c => `<button class="cat" type="button" data-act="c-cat" data-v="${c}"><span class="th" style="background:${tint(c)}">${CATEMO[c]}</span>${catName(c)}</button>`).join('')}</div>
   ${offers.length ? `<section class="sec"><div class="sec-h"><h2 class="h2">${t('Offers from shops')} 🎁</h2><span class="small muted">${t('Paid by the shop, not hidden in prices')}</span></div>
     <div class="hscroll offers">${offers.map(o => { const s = shopById(o.shopId); return `<button class="offer" type="button" data-act="c-shop" data-v="${esc(s.id)}"><span class="o-k">${o.kind === 'freedel' ? '🛵' : o.pct + '%'}</span><b>${esc(offerTitle(o))}</b><span class="row-m">${esc(s.name)}</span></button>`; }).join('')}</div></section>` : ''}
@@ -125,9 +127,10 @@ function cSearch() {
   let h = `<button class="back" type="button" data-act="c-search-reset">‹ ${t('New search')}</button>
     <div class="sec"><h1 class="h1" style="font-size:25px">“${esc(C.q)}”</h1><p class="sub">${t('{n} results', {n:res.length})}${esc(where)}</p></div>
     <div class="chips" role="group" aria-label="${esc(t('Sort'))}">${[['best', t('Best match')], ['price', t('Lowest price')], ['rating', t('Top rated')], ['stock', t('In stock now')]].map(([k, l]) => `<button class="chip" type="button" data-act="c-sort" data-v="${k}" aria-pressed="${C.sort === k}">${l}</button>`).join('')}</div>`;
-  if (!res.length) return h + `<div class="empty"><span class="big">📡</span><b>${t('No shop here has this yet')}</b>
+  if (!res.length) return h + askCta(C.q) + `<div class="empty"><span class="big">📡</span><b>${t('No shop here has this yet')}</b>
     <span>${t('We’ve told shops nearby that people want “{q}”. Try another area, or check back soon.', {q:esc(C.q)})}</span>
     ${C.area !== 'All' ? `<button class="btn btn-ghost btn-sm" type="button" data-act="c-all-areas">${t('Search all areas')}</button>` : ''}</div>`;
+  h += askCta(C.q);
   const groups = new Map();
   for (const r of res) { const k = r.p.name.toLowerCase(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
   for (const rows of groups.values()) {

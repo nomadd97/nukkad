@@ -1,7 +1,7 @@
 /* Nukkad service worker: opens instantly and works on a weak connection.
    Pages: network first, cached copy if offline. Assets: cache first. Database calls are never cached. */
-const CACHE = 'nukkad-3.0.0';
-const SHELL = ['./', './index.html', './seller/', './seller/index.html', './assets/app.css?v=3.0.0', './assets/app.js?v=3.0.0', './assets/qrcode.min.js', './config.js?v=3.0.0',
+const CACHE = 'nukkad-3.1.0';
+const SHELL = ['./', './index.html', './seller/', './seller/index.html', './assets/app.css?v=3.1.0', './assets/app.js?v=3.1.0', './assets/qrcode.min.js', './config.js?v=3.1.0',
   './icons/customer-192.png', './icons/seller-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

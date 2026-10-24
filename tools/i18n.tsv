@@ -430,3 +430,55 @@ Type a message|मैसेज लिखें|ಮೆಸೇಜ್ ಬರೆಯ�
 Send|भेजें|ಕಳಿಸಿ
 Messages here change your shop for real, the same way the WhatsApp bot does.|यहाँ के मैसेज आपकी दुकान को सच में बदलते हैं, ठीक WhatsApp बॉट की तरह।|ಇಲ್ಲಿನ ಮೆಸೇಜ್‌ಗಳು WhatsApp ಬಾಟ್‌ನಂತೆಯೇ ನಿಮ್ಮ ಅಂಗಡಿಯನ್ನು ನಿಜವಾಗಿ ಬದಲಿಸುತ್ತವೆ.
 Clear chat|चैट साफ़ करें|ಚಾಟ್ ಅಳಿಸಿ
+1 shop has it|1 दुकान के पास है|1 ಅಂಗಡಿಯಲ್ಲಿ ಇದೆ
+Ask again|फिर से पूछें|ಮತ್ತೆ ಕೇಳಿ
+Ask the shops on your street|अपनी गली की दुकानों से पूछें|ನಿಮ್ಮ ಬೀದಿಯ ಅಂಗಡಿಗಳನ್ನು ಕೇಳಿ
+Ask the street|गली से पूछें|ಬೀದಿಯನ್ನು ಕೇಳಿ
+Asked {n} shops near you|पास की {n} दुकानों से पूछा|ಹತ್ತಿರದ {n} ಅಂಗಡಿಗಳನ್ನು ಕೇಳಲಾಗಿದೆ
+Asking {n} shops…|{n} दुकानों से पूछ रहे हैं…|{n} ಅಂಗಡಿಗಳನ್ನು ಕೇಳುತ್ತಿದ್ದೇವೆ…
+Can’t find it in the app? Ask every shop on your street. Most of their shelf isn’t listed.|ऐप में नहीं मिला? अपनी गली की हर दुकान से पूछें। उनका ज़्यादातर सामान ऐप में नहीं होता।|ಆ್ಯಪ್‌ನಲ್ಲಿ ಸಿಗಲಿಲ್ಲವೇ? ನಿಮ್ಮ ಬೀದಿಯ ಪ್ರತಿ ಅಂಗಡಿಯನ್ನು ಕೇಳಿ. ಅವರ ಹೆಚ್ಚಿನ ಸಾಮಾನು ಆ್ಯಪ್‌ನಲ್ಲಿ ಇರುವುದಿಲ್ಲ.
+Don’t have|नहीं है|ಇಲ್ಲ
+Goes to {n} open shops in all areas.|सभी इलाकों की {n} खुली दुकानों को जाएगा।|ಎಲ್ಲಾ ಏರಿಯಾಗಳ {n} ತೆರೆದ ಅಂಗಡಿಗಳಿಗೆ ಹೋಗುತ್ತದೆ.
+Goes to {n} open shops in {area}.|{area} की {n} खुली दुकानों को जाएगा।|{area}ಯ {n} ತೆರೆದ ಅಂಗಡಿಗಳಿಗೆ ಹೋಗುತ್ತದೆ.
+Have it on your shelf, even if it isn’t in the app? Reply with a price in one tap. They come to you.|आपकी शेल्फ़ पर है, भले ऐप में न हो? एक टैप में दाम बताइए। ग्राहक आपके पास आएगा।|ಆ್ಯಪ್‌ನಲ್ಲಿ ಇಲ್ಲದಿದ್ದರೂ ನಿಮ್ಮ ಅಂಗಡಿಯಲ್ಲಿ ಇದೆಯೇ? ಒಂದೇ ಟ್ಯಾಪ್‌ನಲ್ಲಿ ಬೆಲೆ ಹೇಳಿ. ಗ್ರಾಹಕರು ನಿಮ್ಮ ಬಳಿ ಬರುತ್ತಾರೆ.
+Held at {shop}|{shop} पर रखा गया|{shop}ನಲ್ಲಿ ಇಟ್ಟಿದ್ದಾರೆ
+Held for you|आपके लिए रखा गया|ನಿಮಗಾಗಿ ಇಟ್ಟಿದ್ದಾರೆ
+Hold it for me|मेरे लिए रख दो|ನನಗಾಗಿ ಇಡಿ
+How many?|कितने?|ಎಷ್ಟು?
+I have it|मेरे पास है|ನನ್ನ ಬಳಿ ಇದೆ
+I picked it up|मैंने ले लिया|ನಾನು ತೆಗೆದುಕೊಂಡೆ
+In your list: {name} at {price}|आपकी लिस्ट में: {name}, {price}|ನಿಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ: {name}, {price}
+More shops may still reply.|और दुकानें भी जवाब दे सकती हैं।|ಇನ್ನೂ ಅಂಗಡಿಗಳು ಉತ್ತರಿಸಬಹುದು.
+No asks right now|अभी कोई सवाल नहीं|ಈಗ ಯಾವುದೇ ಕೇಳಿಕೆ ಇಲ್ಲ
+No phone number is shared.|कोई फ़ोन नंबर शेयर नहीं होता।|ಯಾವ ಫೋನ್ ನಂಬರ್ ಕೂಡ ಹಂಚಿಕೊಳ್ಳುವುದಿಲ್ಲ.
+Not what you need? Ask the street for “{q}”|यह नहीं चाहिए? “{q}” के लिए गली से पूछें|ಇದು ಬೇಡವೇ? “{q}” ಗಾಗಿ ಬೀದಿಯನ್ನು ಕೇಳಿ
+Nukkad se Poocho|नुक्कड़ से पूछो|ನುಕ್ಕಡ್ ಸೆ ಪೂಛೋ
+Nukkad se Poocho is not switched on yet|नुक्कड़ से पूछो अभी चालू नहीं है|ನುಕ್ಕಡ್ ಸೆ ಪೂಛೋ ಇನ್ನೂ ಆನ್ ಆಗಿಲ್ಲ
+Open shop|दुकान खोलें|ಅಂಗಡಿ ತೆರೆಯಿರಿ
+Pay {amt} by UPI|UPI से {amt} दें|UPI ಮೂಲಕ {amt} ಪಾವತಿಸಿ
+People near you are asking|आपके पास के लोग पूछ रहे हैं|ನಿಮ್ಮ ಹತ್ತಿರದ ಜನ ಕೇಳುತ್ತಿದ್ದಾರೆ
+Poocho|पूछो|ಪೂಛೋ
+Search only finds what shops have listed. Most of their shelf isn’t in the app. Ask, and any shop that has it replies with a price.|सर्च सिर्फ़ वही ढूँढता है जो दुकानों ने लिस्ट किया है। उनका ज़्यादातर सामान ऐप में नहीं होता। पूछिए, जिसके पास है वह दाम के साथ जवाब देगा।|ಅಂಗಡಿಗಳು ಪಟ್ಟಿ ಮಾಡಿದ್ದನ್ನು ಮಾತ್ರ ಸರ್ಚ್ ಹುಡುಕುತ್ತದೆ. ಅವರ ಹೆಚ್ಚಿನ ಸಾಮಾನು ಆ್ಯಪ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಕೇಳಿ, ಯಾರ ಬಳಿ ಇದೆಯೋ ಅವರು ಬೆಲೆಯೊಂದಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ.
+Sent. {name} sees your price now.|भेज दिया। {name} को अब आपका दाम दिख रहा है।|ಕಳಿಸಲಾಗಿದೆ. {name} ಈಗ ನಿಮ್ಮ ಬೆಲೆ ನೋಡುತ್ತಾರೆ.
+Shops reply in a few minutes. This page updates by itself.|दुकानें कुछ मिनट में जवाब देती हैं। यह पेज अपने-आप अपडेट होता है।|ಅಂಗಡಿಗಳು ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಉತ್ತರಿಸುತ್ತವೆ. ಈ ಪುಟ ತಾನಾಗಿಯೇ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತದೆ.
+Someone nearby|पास का कोई|ಹತ್ತಿರದ ಯಾರೋ
+Someone nearby needs “{q}”|पास में किसी को “{q}” चाहिए|ಹತ್ತಿರದ ಯಾರಿಗೋ “{q}” ಬೇಕು
+The buyer|ग्राहक|ಗ್ರಾಹಕರು
+This ask is closed|यह सवाल बंद हो गया|ಈ ಕೇಳಿಕೆ ಮುಗಿದಿದೆ
+Type what you need.|लिखिए आपको क्या चाहिए।|ನಿಮಗೆ ಏನು ಬೇಕು ಎಂದು ಬರೆಯಿರಿ.
+Type your price first.|पहले अपना दाम लिखिए।|ಮೊದಲು ನಿಮ್ಮ ಬೆಲೆ ಬರೆಯಿರಿ.
+Waiting for shops…|दुकानों का इंतज़ार…|ಅಂಗಡಿಗಳಿಗಾಗಿ ಕಾಯುತ್ತಿದ್ದೇವೆ…
+Waiting for the buyer to choose.|ग्राहक के चुनने का इंतज़ार।|ಗ್ರಾಹಕರು ಆಯ್ಕೆ ಮಾಡಲು ಕಾಯುತ್ತಿದ್ದೇವೆ.
+What do you need?|आपको क्या चाहिए?|ನಿಮಗೆ ಏನು ಬೇಕು?
+When someone in {area} asks for something, it rings here like an order.|जब {area} में कोई कुछ माँगेगा, यहाँ ऑर्डर की तरह घंटी बजेगी।|{area}ಯಲ್ಲಿ ಯಾರಾದರೂ ಏನಾದರೂ ಕೇಳಿದಾಗ, ಆರ್ಡರ್‌ನಂತೆ ಇಲ್ಲಿ ರಿಂಗ್ ಆಗುತ್ತದೆ.
+You replied {price}|आपने {price} बताया|ನೀವು {price} ಎಂದು ಉತ್ತರಿಸಿದ್ದೀರಿ
+Your asks|आपके सवाल|ನಿಮ್ಮ ಕೇಳಿಕೆಗಳು
+Your price|आपका दाम|ನಿಮ್ಮ ಬೆಲೆ
+asked {t}|{t} पूछा|{t} ಕೇಳಲಾಗಿದೆ
+e.g. geometry box, A4 sheets, Parle-G|जैसे ज्योमेट्री बॉक्स, A4 शीट, पारले-जी|ಉದಾ. ಜಾಮೆಟ್ರಿ ಬಾಕ್ಸ್, A4 ಶೀಟ್, ಪಾರ್ಲೆ-ಜಿ
+{name} chose you at {price}. Keep it aside. Their code is {code}.|{name} ने आपको {price} पर चुना। सामान अलग रख दीजिए। उनका कोड {code} है।|{name} ನಿಮ್ಮನ್ನು {price}ಗೆ ಆಯ್ಕೆ ಮಾಡಿದ್ದಾರೆ. ಸಾಮಾನು ಪಕ್ಕಕ್ಕೆ ಇಡಿ. ಅವರ ಕೋಡ್ {code}.
+{n} open shops nearby get your ask. They reply with a price.|पास की {n} खुली दुकानों को आपका सवाल जाएगा। वे दाम के साथ जवाब देंगी।|ಹತ್ತಿರದ {n} ತೆರೆದ ಅಂಗಡಿಗಳಿಗೆ ನಿಮ್ಮ ಕೇಳಿಕೆ ಹೋಗುತ್ತದೆ. ಅವರು ಬೆಲೆಯೊಂದಿಗೆ ಉತ್ತರಿಸುತ್ತಾರೆ.
+{n} shops have it|{n} दुकानों के पास है|{n} ಅಂಗಡಿಗಳಲ್ಲಿ ಇದೆ
+{shop} has it: {price}|{shop} के पास है: {price}|{shop}ನಲ್ಲಿ ಇದೆ: {price}
+{shop} is holding it for you|{shop} आपके लिए रख रहा है|{shop} ನಿಮಗಾಗಿ ಇಟ್ಟಿದೆ
+{shop} is keeping “{q}” aside for you. Show this code at the counter.|{shop} आपके लिए “{q}” अलग रख रहा है। काउंटर पर यह कोड दिखाइए।|{shop} ನಿಮಗಾಗಿ “{q}” ಪಕ್ಕಕ್ಕೆ ಇಟ್ಟಿದೆ. ಕೌಂಟರ್‌ನಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ.

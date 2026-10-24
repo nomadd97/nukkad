@@ -12,7 +12,7 @@ create extension if not exists pgcrypto with schema extensions;
 do $$
 declare t text;
 begin
-  foreach t in array array['shops','products','orders','searches','ratings','offers'] loop
+  foreach t in array array['shops','products','orders','searches','ratings','offers','asks'] loop
     execute format('create table if not exists public.%I (
       id text primary key,
       data jsonb not null default ''{}''::jsonb,
@@ -30,6 +30,8 @@ begin
     execute format('grant select, insert, update on public.%I to anon, authenticated', 'nk_' || t);
   end loop;
 end $$;
+
+-- nk_asks holds Nukkad se Poocho: buyers' asks and shops' one-tap replies (kind = 'ask' | 'reply')
 
 -- Orders: newest first lookups per shop
 create index if not exists nk_orders_shop on public.nk_orders ((data->>'shopId'));
@@ -49,7 +51,7 @@ revoke all on public.nk_pins from anon, authenticated;
 create or replace function public.nk_patch(t text, doc_id text, patch jsonb)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if t not in ('shops','products','orders','searches','ratings','offers') then
+  if t not in ('shops','products','orders','searches','ratings','offers','asks') then
     raise exception 'unknown collection %', t;
   end if;
   if patch ? 'pin' then raise exception 'pin cannot be set here'; end if;
@@ -114,7 +116,7 @@ grant execute on function public.nk_set_pin(text, text) to anon, authenticated, 
 do $$
 declare t text;
 begin
-  foreach t in array array['nk_shops','nk_products','nk_orders','nk_searches','nk_ratings','nk_offers'] loop
+  foreach t in array array['nk_shops','nk_products','nk_orders','nk_searches','nk_ratings','nk_offers','nk_asks'] loop
     begin
       execute format('alter publication supabase_realtime add table public.%I', t);
     exception when duplicate_object then null;
