@@ -5,7 +5,7 @@
 ![Nukkad demo](docs/demo-poster.jpg)
 
 **Team Nukkad** · KLE Tech CodeFest 2026 · Domain 1: Full-Stack Web Applications × E-Commerce
-Daniel C Acharya (01FE25BCA281) · Vinuta Yalagi (01FE25BCA284) · A S Sanika (01FE24BCA082)
+Daniel C Acharya (01FE25BCA281) · Vinuta Yalagi (01FE25BCA284) · A S Sanika (01FE24BCA082) · Tulsi (01FE25BCA278). Who owns what: [docs/TEAM.md](docs/TEAM.md)
 
 Two installable apps that share one backend:
 
