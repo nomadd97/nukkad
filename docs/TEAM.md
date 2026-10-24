@@ -1,33 +1,36 @@
 # Team Nukkad: who owns what
 
-Four people, four areas. "Owns" means: knows it well enough to explain it, test it, and fix small things in it.
+Four people, two layers, with pairs where the layers meet.
+"Owns" means: knows it well enough to explain it, test it, and fix small things in it.
 The git history shows who wrote which commits; this page shows who stands behind which part.
 
-| Member | USN | Area | Layer |
+| Member | USN | Layer | Owns |
 |---|---|---|---|
-| Daniel C Acharya | 01FE25BCA281 | Database, server functions, WhatsApp bot, deployment | Backend + integration |
-| Vinuta Yalagi | 01FE25BCA284 | Buyer app: search, languages, voice, cart, UPI | Frontend |
-| A S Sanika | 01FE24BCA082 | Shop app: orders, stock, offers, QR poster, ratings | Frontend |
-| Tulsi | 01FE25BCA278 | Demo data, testing, docs, live demo | Quality + product |
+| Vinuta Yalagi | 01FE25BCA284 | Frontend | **Buyer app**: search, Hindi/Kannada, voice, cart, UPI (`src/70-customer.js`, `src/05-i18n.js`, `tools/i18n.tsv`) |
+| Tulsi | 01FE25BCA278 | Frontend | **Shop app**: orders, stock, offers, QR poster, ratings, WhatsApp chat tab, install/PWA, logo (`src/80-seller.js`, `src/85-whatsapp.js`, `assets/`, `icons/`) |
+| Daniel C Acharya | 01FE25BCA281 | Backend + integration | **Server functions**: WhatsApp bot, Smart Fill (AI), message reader, deployment (Vercel, Supabase, Meta) (`supabase/functions/`, `src/30-data.js`) |
+| A S Sanika | 01FE24BCA082 | Backend | **Database**: tables, locked checkout, PIN security, realtime, seed data (`supabase/schema.sql`, `supabase/seed.sql`, `src/22-seed-hubli.js`) |
 
-## Where the layers meet (full-stack features)
+## Where frontend meets backend (the full-stack features)
 
-| Feature | Frontend part (file) | Backend part (file) | Explained by |
+Each feature is explained by a pair: one person for the screen, one for what runs behind it.
+
+| Feature | Screen (frontend) | Behind it (backend) | Explained by |
 |---|---|---|---|
-| Place an order, no overselling | cart and checkout (`src/70-customer.js`) | `nk_place_order` (`supabase/schema.sql`) | Vinuta (screen) + Daniel (database step) |
-| Order appears on the shop phone | order list (`src/80-seller.js`) | Supabase Realtime | Sanika + Daniel |
-| Update stock by WhatsApp | chat tab (`src/85-whatsapp.js`) | `commands.js`, `whatsapp-bot` function | Sanika (chat) + Daniel (bot) |
-| Hindi / Kannada | `t()` and `tools/i18n.tsv` (`src/05-i18n.js`) | none (all in the app) | Vinuta |
-| Shop-funded offers | offer screen (`src/80-seller.js`) | offers table, applied at checkout | Sanika |
-| Seed data near KLE Tech | n/a | `src/22-seed-hubli.js`, `supabase/seed.sql` | Tulsi |
+| Place an order, no overselling | cart and checkout | `nk_place_order` locks stock | Vinuta + Sanika |
+| Order appears on the shop phone | shop order list | Supabase Realtime | Tulsi + Sanika |
+| Update stock by WhatsApp | chat tab in the shop app | `whatsapp-bot` and `commands.js` | Tulsi + Daniel |
+| Hindi / Kannada | `t()` translations, voice search | Hindi/Kannada words in `commands.js` | Vinuta + Daniel |
+| Shop login with a PIN | PIN screen | `nk_login`, hashed PINs | Tulsi + Sanika |
+| Smart Fill (AI adds product details) | add-product form | `smart-fill` function (Gemini) | Tulsi + Daniel |
 
-## Small jobs for this morning (real, checkable)
+## Small jobs for this morning (real and checkable)
 
-- **Vinuta:** open the buyer app in Kannada and Hindi, go through search, cart and UPI screens, and note any wrong or odd translation. Fix any she finds in `tools/i18n.tsv`.
-- **Sanika:** log in to the shop app (Vidya Stationers, PIN 1234), accept an order, change a price, make an offer, print the QR poster. Note anything confusing.
-- **Tulsi:** run the full demo script on her own phone, install the app to the home screen, and write down every bug or slow step. Check the shop names and products near KLE Tech look realistic.
-- **Daniel:** WhatsApp number setup with Meta, final deploy, and answering backend questions.
+- **Vinuta:** open the buyer app in Kannada and Hindi, go through search, cart and UPI, note any odd translation, and fix it in `tools/i18n.tsv`.
+- **Tulsi:** log in to the shop app (Vidya Stationers, PIN 1234), accept an order, change a price, make an offer, print the QR poster, install the app to the home screen. Write down every bug.
+- **Sanika:** in the Supabase SQL editor, run two orders for the last item and watch the second one get refused. Try a wrong PIN. Check the 6 demo shops near KLE Tech look right in `seed.sql`.
+- **Daniel:** WhatsApp number setup with Meta, final deploy, backend questions.
 
 ## Rule for the judges
 
-Say what is true. If a judge asks "who built this part?", answer with the owner and what they actually did. Everyone should be able to tell the one-order story in the Team Guide.
+Say what is true. If a judge asks "who built this part?", answer with what you actually did and what you tested, and say who wrote the first version if it was someone else. Everyone should be able to tell the one-order story in the Team Guide.
