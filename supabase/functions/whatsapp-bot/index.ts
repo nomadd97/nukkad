@@ -8,6 +8,8 @@
 // Secrets:  supabase secrets set WHATSAPP_TOKEN=... WHATSAPP_PHONE_ID=... WHATSAPP_VERIFY_TOKEN=any-words-you-pick
 //           (optional) WHATSAPP_APP_SECRET=...  -> checks that each message really came from Meta
 //           (optional) GEMINI_API_KEY=...       -> understands messages the reader can't
+// Twilio:   Messaging > WhatsApp sandbox > "When a message comes in" = the same URL (HTTP POST).
+//           (optional) TWILIO_AUTH_TOKEN=... and TWILIO_WEBHOOK_URL=<that exact URL> -> checks each message came from Twilio
 // Meta app: WhatsApp > Configuration > Webhook URL = https://<project>.supabase.co/functions/v1/whatsapp-bot
 //           Verify token = WHATSAPP_VERIFY_TOKEN, subscribe to "messages".
 
@@ -101,11 +103,12 @@ async function todayStats(shopId: string) {
   return { orders: rows.length, sales: rows.reduce((s: number, o: any) => s + (o.total || 0) - (o.fee || 0), 0), pending: rows.filter((o: any) => o.status === 'pending').length };
 }
 
-async function handle(from: string, text: string) {
+// Works out the reply for one message. Returns the text; the caller decides how to send it
+// (Meta: we call the Graph API; Twilio: we answer the webhook with TwiML).
+async function handle(from: string, text: string): Promise<string> {
   const { data: shops } = await db.from('nk_shops').select('id,data').eq('data->>whatsapp', from).limit(1);
   if (!shops?.length) {
-    await send(from, 'Namaste! This WhatsApp number is not linked to a Nukkad shop yet. Open Nukkad for Shops, register your shop with this number, then message me again.');
-    return;
+    return 'Namaste! This WhatsApp number is not linked to a Nukkad shop yet. Open Nukkad for Shops, register your shop with this number, then message me again.';
   }
   const shop = { ...shops[0].data, id: shops[0].id };
   const { data: rows } = await db.from('nk_products').select('id,data').eq('data->>shopId', shop.id).limit(2000);
@@ -121,7 +124,31 @@ async function handle(from: string, text: string) {
     if (!['unknown', 'which', 'help', 'orders'].includes(a.type)) await apply(a, shop, products);
     replies.push(replyFor(a, a.type === 'orders' ? { stats: await todayStats(shop.id) } : {}));
   }
-  await send(from, replies.join('\n\n') || replyFor({ type: 'help' }));
+  return replies.join('\n\n') || replyFor({ type: 'help' });
+}
+
+// ---------- Twilio WhatsApp (sandbox or approved sender) ----------
+// Twilio posts a form: From=whatsapp:+919876543210, Body=<text>. We answer with TwiML.
+const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+async function signedByTwilio(req: Request, params: URLSearchParams) {
+  const token = env('TWILIO_AUTH_TOKEN');
+  if (!token) return true;                                  // optional, like the Meta check
+  const url = env('TWILIO_WEBHOOK_URL', req.url);           // must be the exact URL set in Twilio
+  const data = url + [...params.keys()].sort().map(k => k + params.get(k)).join('');
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(token), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data)));
+  return btoa(String.fromCharCode(...mac)) === (req.headers.get('x-twilio-signature') ?? '');
+}
+async function twilio(req: Request, raw: string) {
+  const params = new URLSearchParams(raw);
+  if (!(await signedByTwilio(req, params))) return new Response('Bad signature', { status: 401 });
+  const from = (params.get('From') ?? '').replace(/^whatsapp:/, '').replace(/\D/g, '');   // -> 919876543210
+  const text = params.get('Body') ?? '';
+  let reply = '';
+  try { reply = from && text ? await handle(from, text) : replyFor({ type: 'help' }); }
+  catch (e) { console.error('twilio handle failed', e); reply = 'Sorry, something went wrong. Please try again.'; }
+  return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>${xml(reply.slice(0, 1500))}</Message></Response>`,
+    { headers: { 'Content-Type': 'text/xml' } });
 }
 
 Deno.serve(async (req) => {
@@ -132,11 +159,12 @@ Deno.serve(async (req) => {
   }
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   const raw = await req.text();
+  if ((req.headers.get('content-type') ?? '').includes('application/x-www-form-urlencoded')) return twilio(req, raw);
   if (!(await signedByMeta(req, raw))) return new Response('Bad signature', { status: 401 });
   let body: any = {};
   try { body = JSON.parse(raw); } catch { return new Response('ok'); }
   const msgs = (body.entry ?? []).flatMap((e: any) => (e.changes ?? []).flatMap((c: any) => c.value?.messages ?? []));
-  const work = msgs.filter((m: any) => m.type === 'text' && m.from && m.text?.body).map((m: any) => handle(m.from, m.text.body).catch(e => console.error('handle failed', e)));
+  const work = msgs.filter((m: any) => m.type === 'text' && m.from && m.text?.body).map((m: any) => handle(m.from, m.text.body).then(r => send(m.from, r)).catch(e => console.error('handle failed', e)));
   await Promise.all(work);
   return new Response('ok');                        // always 200, or Meta keeps retrying
 });
