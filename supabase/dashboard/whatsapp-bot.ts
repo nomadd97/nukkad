@@ -121,8 +121,23 @@ export function parseMessage(text, products) {
   return String(text || '').split(/\n|;|\s+and\s+|\s+aur\s+/i).map(l => l.trim()).filter(Boolean).slice(0, 15).map(l => parseLine(l, products)).filter(Boolean);
 }
 
+/* Order commands (need the database, so the server runs them): "accept", "ready NK-AB12", "delivered", "paid NK-AB12", "pending", "remove lab coat" */
+export function parseOrderCmd(text) {
+  const t = String(text || '').trim().replace(/^\//, '');
+  let m = t.match(/^(accept|confirm|ready|dispatch|delivered|done|complete|picked up|paid)\s*(?:order\s*)?(NK-?[A-Z0-9]{4})?\s*$/i);
+  if (m) {
+    const w = m[1].toLowerCase();
+    const type = w === 'accept' || w === 'confirm' ? 'accept' : w === 'ready' || w === 'dispatch' ? 'ready' : w === 'paid' ? 'paid' : 'done';
+    return {type, id: m[2] ? m[2].toUpperCase().replace(/^NK-?/, 'NK-') : ''};
+  }
+  if (/^(pending|new orders?|active( orders?)?|jobs|list)\s*$/i.test(t)) return {type:'list'};
+  m = t.match(/^(?:remove|delete|hide)\s+(.+)$/i);
+  if (m) return {type:'remove', text:m[1]};
+  return null;
+}
+
 const rs = n => '₹' + Number(n || 0).toLocaleString('en-IN');
-export const HELP_TEXT = 'Namaste! Send me updates like:\n• blue pen out of stock\n• notebook stock 20\n• pen +10\n• geometry box price 130\n• add lab coat ₹350, 8 left\n• shop closed / shop open\n• orders\nHindi and Kannada words work too.';
+export const HELP_TEXT = 'Namaste! Send me updates like:\n• blue pen out of stock\n• notebook stock 20\n• pen +10\n• geometry box price 130\n• add lab coat ₹350, 8 left\n• shop closed / shop open\n• orders (sales today) / pending (open orders)\n• accept / ready / delivered / paid (add an order id like NK-AB12 if more than one)\n• remove lab coat\nHindi and Kannada words work too.';
 
 /* The reply line for one action, after it was applied. ctx = {shop, stats:{orders, sales, pending}} */
 export function replyFor(a, ctx = {}) {
@@ -238,9 +253,44 @@ async function handle(from: string, text: string): Promise<string> {
   }
   return handleShop({ ...shops[0].data, id: shops[0].id }, text);
 }
+const FROM: Record<string, string[]> = { accept: ['pending'], ready: ['confirmed'], done: ['ready'] };
+const TO: Record<string, string> = { accept: 'confirmed', ready: 'ready', done: 'completed' };
+async function orderCmd(shop: Record<string, any>, c: Action, products: Product[]): Promise<string> {
+  const { data } = await db.from('nk_orders').select('id,data').eq('data->>shopId', shop.id).order('updated_at', { ascending: false }).limit(300);
+  const orders = (data ?? []).map((r: any) => ({ ...r.data, id: r.id }));
+  const line = (o: any) => `${o.id} · ${o.buyer} · ₹${o.total} · ${o.status}${o.mode === 'delivery' ? ' · delivery' : ''}\n   ${(o.items ?? []).map((i: any) => i.qty + '× ' + i.name).join(', ')}`;
+  if (c.type === 'list') {
+    const open = orders.filter((o: any) => ['pending', 'confirmed', 'ready'].includes(o.status)).slice(0, 10);
+    return open.length ? '📦 Open orders:\n' + open.map(line).join('\n') + '\n\nReply: accept / ready / delivered (+ id if more than one)' : '📦 No open orders right now.';
+  }
+  if (c.type === 'remove') {
+    const f = findProduct(c.text, products);
+    if (f.many) return 'Which one?\n' + f.many.map((p: any, i: number) => `${i + 1}. ${p.name}`).join('\n') + '\nSend the full name, e.g. "remove ' + f.many[0].name + '".';
+    if (!f.p) return `🤔 I couldn't find "${c.text}" in your products.`;
+    await patch('products', f.p.id, { active: false, via: 'whatsapp', viaAt: Date.now() });
+    return `🗑️ ${f.p.name} hidden. Buyers can't see it now. (Send "add ${f.p.name} ₹${f.p.price}, ${f.p.stock ?? 0} left" to bring it back.)`;
+  }
+  if (c.type === 'paid') {
+    const open = orders.filter((o: any) => o.paid !== 'confirmed' && o.status !== 'cancelled');
+    const pick = c.id ? open.filter((o: any) => o.id === c.id) : open.slice(0, 1);
+    if (!pick.length) return '🤔 No unpaid order found.';
+    await patch('orders', pick[0].id, { paid: 'confirmed', paidAt: Date.now() });
+    return `₹ ${pick[0].id} marked paid.`;
+  }
+  const cands = orders.filter((o: any) => FROM[c.type].includes(o.status) && (!c.id || o.id === c.id));
+  if (!cands.length) return c.id ? `🤔 ${c.id} isn't waiting for that step.` : { accept: 'No new orders waiting.', ready: 'No accepted orders to mark ready.', done: 'No orders out for delivery or pickup.' }[c.type as 'accept' | 'ready' | 'done'];
+  if (!c.id && cands.length > 1) return 'Which order?\n' + cands.slice(0, 6).map(line).join('\n') + `\n\nSend e.g. "${c.type === 'done' ? 'delivered' : c.type} ${cands[0].id}".`;
+  const o = cands[0];
+  await patch('orders', o.id, { status: TO[c.type], statusAt: Date.now() });
+  const msg = { accept: '✅ Accepted', ready: o.mode === 'delivery' ? '🛵 Out for delivery' : '📦 Ready for pickup', done: o.mode === 'delivery' ? '✓ Delivered' : '✓ Picked up' }[c.type as 'accept' | 'ready' | 'done'];
+  return `${msg}: ${o.id} (${o.buyer}). ${o.buyer.split(' ')[0]} sees it now.`;
+}
 async function handleShop(shop: Record<string, any>, text: string): Promise<string> {
   const { data: rows } = await db.from('nk_products').select('id,data').eq('data->>shopId', shop.id).limit(2000);
   const products: Product[] = (rows ?? []).map((r: any) => ({ ...r.data, id: r.id }));
+
+  const oc = parseOrderCmd(text) as Action | null;
+  if (oc) return orderCmd(shop, oc, products);
 
   let actions = parseMessage(text, products) as Action[];
   if (actions.length && actions.every(a => a.type === 'unknown')) {

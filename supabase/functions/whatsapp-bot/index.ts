@@ -15,7 +15,7 @@
 //           Verify token = WHATSAPP_VERIFY_TOKEN, subscribe to "messages".
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { parseMessage, replyFor, HELP_TEXT } from '../_shared/commands.js';
+import { parseMessage, parseOrderCmd, findProduct, replyFor, HELP_TEXT } from '../_shared/commands.js';
 
 const env = (k: string, d = '') => Deno.env.get(k) ?? d;
 const GRAPH = `https://graph.facebook.com/${env('GRAPH_VERSION', 'v23.0')}`;
@@ -113,9 +113,44 @@ async function handle(from: string, text: string): Promise<string> {
   }
   return handleShop({ ...shops[0].data, id: shops[0].id }, text);
 }
+const FROM: Record<string, string[]> = { accept: ['pending'], ready: ['confirmed'], done: ['ready'] };
+const TO: Record<string, string> = { accept: 'confirmed', ready: 'ready', done: 'completed' };
+async function orderCmd(shop: Record<string, any>, c: Action, products: Product[]): Promise<string> {
+  const { data } = await db.from('nk_orders').select('id,data').eq('data->>shopId', shop.id).order('updated_at', { ascending: false }).limit(300);
+  const orders = (data ?? []).map((r: any) => ({ ...r.data, id: r.id }));
+  const line = (o: any) => `${o.id} · ${o.buyer} · ₹${o.total} · ${o.status}${o.mode === 'delivery' ? ' · delivery' : ''}\n   ${(o.items ?? []).map((i: any) => i.qty + '× ' + i.name).join(', ')}`;
+  if (c.type === 'list') {
+    const open = orders.filter((o: any) => ['pending', 'confirmed', 'ready'].includes(o.status)).slice(0, 10);
+    return open.length ? '📦 Open orders:\n' + open.map(line).join('\n') + '\n\nReply: accept / ready / delivered (+ id if more than one)' : '📦 No open orders right now.';
+  }
+  if (c.type === 'remove') {
+    const f = findProduct(c.text, products);
+    if (f.many) return 'Which one?\n' + f.many.map((p: any, i: number) => `${i + 1}. ${p.name}`).join('\n') + '\nSend the full name, e.g. "remove ' + f.many[0].name + '".';
+    if (!f.p) return `🤔 I couldn't find "${c.text}" in your products.`;
+    await patch('products', f.p.id, { active: false, via: 'whatsapp', viaAt: Date.now() });
+    return `🗑️ ${f.p.name} hidden. Buyers can't see it now. (Send "add ${f.p.name} ₹${f.p.price}, ${f.p.stock ?? 0} left" to bring it back.)`;
+  }
+  if (c.type === 'paid') {
+    const open = orders.filter((o: any) => o.paid !== 'confirmed' && o.status !== 'cancelled');
+    const pick = c.id ? open.filter((o: any) => o.id === c.id) : open.slice(0, 1);
+    if (!pick.length) return '🤔 No unpaid order found.';
+    await patch('orders', pick[0].id, { paid: 'confirmed', paidAt: Date.now() });
+    return `₹ ${pick[0].id} marked paid.`;
+  }
+  const cands = orders.filter((o: any) => FROM[c.type].includes(o.status) && (!c.id || o.id === c.id));
+  if (!cands.length) return c.id ? `🤔 ${c.id} isn't waiting for that step.` : { accept: 'No new orders waiting.', ready: 'No accepted orders to mark ready.', done: 'No orders out for delivery or pickup.' }[c.type as 'accept' | 'ready' | 'done'];
+  if (!c.id && cands.length > 1) return 'Which order?\n' + cands.slice(0, 6).map(line).join('\n') + `\n\nSend e.g. "${c.type === 'done' ? 'delivered' : c.type} ${cands[0].id}".`;
+  const o = cands[0];
+  await patch('orders', o.id, { status: TO[c.type], statusAt: Date.now() });
+  const msg = { accept: '✅ Accepted', ready: o.mode === 'delivery' ? '🛵 Out for delivery' : '📦 Ready for pickup', done: o.mode === 'delivery' ? '✓ Delivered' : '✓ Picked up' }[c.type as 'accept' | 'ready' | 'done'];
+  return `${msg}: ${o.id} (${o.buyer}). ${o.buyer.split(' ')[0]} sees it now.`;
+}
 async function handleShop(shop: Record<string, any>, text: string): Promise<string> {
   const { data: rows } = await db.from('nk_products').select('id,data').eq('data->>shopId', shop.id).limit(2000);
   const products: Product[] = (rows ?? []).map((r: any) => ({ ...r.data, id: r.id }));
+
+  const oc = parseOrderCmd(text) as Action | null;
+  if (oc) return orderCmd(shop, oc, products);
 
   let actions = parseMessage(text, products) as Action[];
   if (actions.length && actions.every(a => a.type === 'unknown')) {
