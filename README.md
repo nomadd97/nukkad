@@ -28,12 +28,22 @@ Both are Progressive Web Apps: open the link on an Android phone, tap **Install*
 - Pay the shop directly: one-tap UPI (GPay / PhonePe / Paytm), a QR for paying from another phone, or cash
 - Live order tracking, rate after pickup, re-order in one tap
 
-**WhatsApp bot (built at CodeFest)**
-- Shops update their store by texting Nukkad's WhatsApp number, like texting a friend: "blue pen out of stock", "notebook stock 20", "pen +10", "calculator price 1099", "add lab coat ₹350, 8 left", "shop closed", "orders"
+**Nukkad se Poocho — "ask the nukkad" (built at CodeFest)**
+- Search only finds what a shop has typed into the app; most of a small shop's shelf is never listed. So a buyer can ask every open shop in their area: "geometry box × 2, today"
+- Shops get it instantly in a **Poocho** tab that rings like an order, and reply with a price in one tap ("I have it · ₹120"), even if the item isn't listed. If they do list something similar, the price is pre-filled
+- The buyer sees replies live (cheapest marked "Best price"), taps **Hold it for me**, gets a 4-letter pickup code and a UPI pay button
+- Works in English, हिंदी and ಕನ್ನಡ. No phone numbers are shared. Code: `src/75-poocho.js`, table `nk_asks`
+
+**Chat bot: update your shop by texting (built at CodeFest)**
+- **Live on Telegram (@Nukkad_bot) today.** A shopkeeper taps "Share my number"; if it matches their shop's saved number, the chat is linked
+- WhatsApp: the same function also accepts Meta's WhatsApp Cloud API and Twilio's WhatsApp sandbox. Our own WhatsApp number is waiting on Meta business verification (documents, takes days), so for CodeFest the bot runs on Telegram and inside the shop app
+
+**What the bot understands**
+- Shops update their store by texting, like texting a friend: "blue pen out of stock", "notebook stock 20", "pen +10", "calculator price 1099", "add lab coat ₹350, 8 left", "shop closed", "orders"
 - Understands Hinglish and Kannada too: "pen khatam", "ಪೆನ್ ಇಲ್ಲ", "dukaan band"
 - A fast built-in command reader handles the common messages; Gemini is asked only when the reader can't understand one, and its answer is checked against the shop's real products before anything changes
 - The same reader powers a WhatsApp-style chat inside the shop app, so it works even before the WhatsApp number is connected
-- Code: `supabase/functions/_shared/commands.js` (the brain) and `supabase/functions/whatsapp-bot/` (the WhatsApp webhook) · Preview video: `docs/nukkad-whatsapp-demo.mp4`
+- Code: `supabase/functions/_shared/commands.js` (the brain) and `supabase/functions/whatsapp-bot/` (one webhook for Telegram, Meta WhatsApp and Twilio) · Preview video: `docs/nukkad-whatsapp-demo.mp4`
 
 **Shop app**
 - 4-digit PIN login, register a new shop in two minutes
