@@ -13,6 +13,7 @@
 //           (optional) GEMINI_API_KEY=...       -> understands messages the reader can't
 // Twilio:   Messaging > WhatsApp sandbox > "When a message comes in" = the same URL (HTTP POST).
 //           (optional) TWILIO_AUTH_TOKEN=... and TWILIO_WEBHOOK_URL=<that exact URL> -> checks each message came from Twilio
+// Telegram: setWebhook to the same URL (see telegram() below). Optional TELEGRAM_SECRET=... checks each update.
 // Meta app: WhatsApp > Configuration > Webhook URL = https://<project>.supabase.co/functions/v1/whatsapp-bot
 //           Verify token = WHATSAPP_VERIFY_TOKEN, subscribe to "messages".
 
@@ -229,13 +230,15 @@ async function todayStats(shopId: string) {
 }
 
 // Works out the reply for one message. Returns the text; the caller decides how to send it
-// (Meta: we call the Graph API; Twilio: we answer the webhook with TwiML).
+// (Meta: we call the Graph API; Twilio: we answer the webhook with TwiML; Telegram: we answer with JSON).
 async function handle(from: string, text: string): Promise<string> {
   const { data: shops } = await db.from('nk_shops').select('id,data').eq('data->>whatsapp', from).limit(1);
   if (!shops?.length) {
     return 'Namaste! This WhatsApp number is not linked to a Nukkad shop yet. Open Nukkad for Shops, register your shop with this number, then message me again.';
   }
-  const shop = { ...shops[0].data, id: shops[0].id };
+  return handleShop({ ...shops[0].data, id: shops[0].id }, text);
+}
+async function handleShop(shop: Record<string, any>, text: string): Promise<string> {
   const { data: rows } = await db.from('nk_products').select('id,data').eq('data->>shopId', shop.id).limit(2000);
   const products: Product[] = (rows ?? []).map((r: any) => ({ ...r.data, id: r.id }));
 
@@ -250,6 +253,38 @@ async function handle(from: string, text: string): Promise<string> {
     replies.push(replyFor(a, a.type === 'orders' ? { stats: await todayStats(shop.id) } : {}));
   }
   return replies.join('\n\n') || replyFor({ type: 'help' });
+}
+
+// ---------- Telegram (same brain, free, no business verification) ----------
+// Set once:  https://api.telegram.org/bot<TOKEN>/setWebhook?url=<this function URL>&secret_token=<TELEGRAM_SECRET>
+// A chat is linked to a shop when the shopkeeper taps "Share my number" and it matches the shop's saved number.
+const phoneDigits = (v: string) => { let d = String(v || '').replace(/\D/g, ''); if (d.length === 10) d = '91' + d; return d; };
+async function telegram(req: Request, body: any) {
+  const secret = env('TELEGRAM_SECRET');
+  if (secret && req.headers.get('x-telegram-bot-api-secret-token') !== secret) return new Response('Forbidden', { status: 403 });
+  const m = body.message ?? body.edited_message;
+  if (!m?.chat?.id) return new Response('ok');
+  const chat = String(m.chat.id);
+  const say = (text: string, extra: Record<string, unknown> = {}) =>
+    Response.json({ method: 'sendMessage', chat_id: m.chat.id, text: text.slice(0, 4000), ...extra });
+  const askForNumber = { reply_markup: { keyboard: [[{ text: '📱 Share my number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } };
+  try {
+    if (m.contact) {
+      if (m.contact.user_id !== m.from?.id) return say('Please share your own number with the button below.', askForNumber);
+      const phone = phoneDigits(m.contact.phone_number);
+      const { data: shops } = await db.from('nk_shops').select('id,data').eq('data->>whatsapp', phone).limit(1);
+      if (!shops?.length) return say('This number is not linked to a Nukkad shop. Register your shop in Nukkad for Shops with this number, then try again.', { reply_markup: { remove_keyboard: true } });
+      await db.rpc('nk_patch', { t: 'shops', doc_id: shops[0].id, patch: { telegram: chat } });
+      return say(`✅ Linked to ${shops[0].data.name}.\n\n` + HELP_TEXT, { reply_markup: { remove_keyboard: true } });
+    }
+    const { data: shops } = await db.from('nk_shops').select('id,data').eq('data->>telegram', chat).limit(1);
+    if (!shops?.length) return say('Namaste! I update your Nukkad shop when you message me. First, tap the button below to share your phone number. If it matches your shop, this chat gets linked.', askForNumber);
+    const text = String(m.text ?? '').replace(/^\/(start|help)\b.*/i, 'help');
+    return say(await handleShop({ ...shops[0].data, id: shops[0].id }, text || 'help'));
+  } catch (e) {
+    console.error('telegram failed', e);
+    return say('Sorry, something went wrong. Please try again.');
+  }
 }
 
 // ---------- Twilio WhatsApp (sandbox or approved sender) ----------
@@ -285,9 +320,10 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   const raw = await req.text();
   if ((req.headers.get('content-type') ?? '').includes('application/x-www-form-urlencoded')) return twilio(req, raw);
-  if (!(await signedByMeta(req, raw))) return new Response('Bad signature', { status: 401 });
   let body: any = {};
   try { body = JSON.parse(raw); } catch { return new Response('ok'); }
+  if (body && typeof body.update_id === 'number') return telegram(req, body);
+  if (!(await signedByMeta(req, raw))) return new Response('Bad signature', { status: 401 });
   const msgs = (body.entry ?? []).flatMap((e: any) => (e.changes ?? []).flatMap((c: any) => c.value?.messages ?? []));
   const work = msgs.filter((m: any) => m.type === 'text' && m.from && m.text?.body).map((m: any) => handle(m.from, m.text.body).then(r => send(m.from, r)).catch(e => console.error('handle failed', e)));
   await Promise.all(work);
